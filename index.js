@@ -31,6 +31,7 @@ const mdLinks = (filePath, options) => {
         }
       }
     });
+    return Promise.all(filesArr);
   }
 };
 

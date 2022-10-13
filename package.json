@@ -4,7 +4,9 @@
   "version": "0.1.0",
   "main": "./src/index.js",
   "author": "Misdely Morales",
-  "bin": "mdLink.js",
+  "bin": {
+    "mdLink": "./src/index.js"
+  },
   "engines": {
     "node": ">=16.x"
   },
@@ -13,6 +15,7 @@
     "url": "https://github.com/misdelymorales/markdown-links"
   },
   "dependencies": {
+    "cheerio": "^1.0.0-rc.12",
     "colors": "^1.4.0",
     "yargs": "^17.6.0"
   }

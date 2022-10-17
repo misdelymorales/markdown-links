@@ -2,7 +2,7 @@
 //importar modulos
 const fs = require("fs");
 const path = require("path");
-const fetch = require("cross-fecth");
+const fetch = require("node-fetch");
 const colors = require("colors");
 colors.setTheme({
   silly: "rainbow",

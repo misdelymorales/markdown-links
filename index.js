@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 const functionsMD = require("./functions.js");
+const fs = require("fs");
 
 const mdLinks = (path, options) => {
   return new Promise((resolve, reject) => {
@@ -12,7 +13,7 @@ const mdLinks = (path, options) => {
       const info = fs.statSync(thePath);
       let arrFiles = [];
 
-      if (isDirectory(thePath)) {
+      if (functionsMD.isDirectory(thePath)) {
         const fileDir = readDir(thePath).map((file) =>
           path.join(thePath, file)
         );
@@ -30,10 +31,12 @@ const mdLinks = (path, options) => {
         console.log("Undetermined path".error);
       }
 
-      const listArray = arrFiles.filter(isMdFile);
+      const listArray = arrFiles.filter(functionsMD.mdFile);
       return listArray;
     };
+
+    resolve(readingFile(path));
   });
 };
 
-console.log(mdLinks);
+mdLinks("./test.md").then(console.log);

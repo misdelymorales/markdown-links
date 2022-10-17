@@ -2,10 +2,10 @@
   "name": "md-links",
   "description": "Lee y analiza archivos en formato Markdown, para verificar los links que contengan y reportar algunas estadísticas.",
   "version": "0.1.0",
-  "main": "./src/index.js",
+  "main": "./index.js",
   "author": "Misdely Morales",
   "bin": {
-    "mdLink": "./src/index.js"
+    "mdLink": "./index.js"
   },
   "engines": {
     "node": ">=16.x"
@@ -14,6 +14,11 @@
     "type": "git",
     "url": "https://github.com/misdelymorales/markdown-links"
   },
+  "keywords": [
+    "md",
+    "markdown",
+    "md-link"
+  ],
   "dependencies": {
     "cheerio": "^1.0.0-rc.12",
     "colors": "^1.4.0",

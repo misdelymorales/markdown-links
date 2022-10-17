@@ -2,7 +2,7 @@
 //importar modulos
 const fs = require("fs");
 const path = require("path");
-const cheerio = require("cheerio");
+const fetch = require("cross-fecth");
 const colors = require("colors");
 colors.setTheme({
   silly: "rainbow",
@@ -12,33 +12,63 @@ colors.setTheme({
   warn: ["yellow", "bold"],
   debug: "blue",
   error: ["red", "underline"],
-}); //console.log('test'.custom); console.log("this is an error".error);
+});
 
-// //Verificar si la ruta existe
-// const routeExist = (inputPath) => fs.existsSync(inputPath);
-// //Verificar si es directorio
-// const isFolder = (inputPath) => fs.lstatSync(inputPath).isDirectory();
-// //Leer directorio
-// const readFolder = (directory) => fs.readdirSync(directory, "utf8");
-// //Filtrar archivos .md
-// const filesMD = (file) => path.extname(file) === ".md";
-// //Leer archivo .md
-// const readFile = (file) => fs.readFileSync(file, "utf8");
+//Comprobar si ruta existe
+const pathExist = (route) => fs.existsSync(route);
 
-const extractLinks = (filename) => {
-  const data = fs.readFileSync(filename, "utf8");
-  const dataHtml = marked.parse(data); //usando marcado para transformar md a html
-  const $ = cheerio.load(dataHtml); //usando cheerio para recorrer el archivo para extraer etiquetas <a>
-  const linksObjects = $("a"); //
+//Comprobar si la ruta es absoluta, si es relativa convertirla en absoluta
+const getAbsolutePath = (route) => {
+  return path.isAbsolute(route) ? route : path.resolve(route);
+};
 
-  const linksObjArr = [];
-  linksObjects.each((index, link) => {
-    linksObjArr.push({
-      href: $(link).attr("href"),
-      text: $(link).text(),
-      file: filename,
-    });
+//Comprobar si es directorio
+const isDirectory = (route) => fs.statSync(route).isDirectory(); //El método fs.statSync() se utiliza para devolver información sobre la ruta del archivo dada de forma síncrona.
+
+//Leer directorio
+const readDir = (routeDir) => fs.readdirSync(routeDir);
+
+//comprobar si es un archivo md
+const mdFile = (route) => {
+  const ext = path.extname(route);
+  return ext === ".md"
+    ? true
+    : console.log("La ruta no es un archivo md".error);
+};
+
+const linksInfo = (filesMd) => {
+  let links = [];
+  filesMd.forEach((files) => {
+    const reguExpress =
+      /\[(.+)\]\((https?:\/\/[^\s]+)(?: '(.+)')?\)|(https?:\/\/[^\s]+)/gi;
+    const reguText = /\[([^\]]+)]/g;
+    const reguUrl =
+      /(?:(?:https?|ftp|file):\/\/|www\.|ftp\.)(?:\([-A-Z0-9+&@#\/%=~_|$?!:,.]*\)|[-A-Z0-9+&@#\/%=~_|$?!:,.])*(?:\([-A-Z0-9+&@#\/%=~_|$?!:,.]*\)|[A-Z0-9+&@#\/%=~_|$])/gim;
+    const lineText = fs.readFileSync(files, { encoding: "utf8" });
+    const matchLinks = lineText.match(reguExpress);
+    if (matchLinks !== null) {
+      matchLinks.forEach((info) => {
+        links.push({
+          text:
+            info.match(reguText) !== null
+              ? info.match(reguText).toString().slice(1, -1)
+              : "Texto no encontrado",
+          href: info.match(reguUrl).toString(),
+          file: files,
+        });
+      });
+    } else {
+      console.log("No se puede encontrar ningún enlace".error);
+    }
   });
+  return links;
+};
 
-  return linksObjArr;
+module.exports = {
+  isDirectory,
+  getAbsolutePath,
+  pathExist,
+  readDir,
+  mdFile,
+  linksInfo,
 };

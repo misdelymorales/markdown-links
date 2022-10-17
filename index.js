@@ -1,38 +1,39 @@
-const fs = require("fs");
-const path = require("node:path/posix");
-const colors = require("colors");
-colors.setTheme({
-  silly: "rainbow",
-  prompt: "grey",
-  ok: ["green", "bold", "underline"],
-  help: "cyan",
-  warn: ["yellow", "bold"],
-  debug: "blue",
-  error: ["red", "underline"],
-});
+#!/usr/bin/env node
+const functionsMD = require("./functions.js");
 
-const mdLinks = (filePath, options) => {
-  if (fs.statSync(filePath).isDirectory()) {
-    console.log(colors.help("Consulta los resultados de tu directorio:"));
-    let arrFiles = [];
+const mdLinks = (path, options) => {
+  return new Promise((resolve, reject) => {
+    const isAbsolute = functionsMD.getAbsolutePath(path);
+    if (functionsMD.pathExist(functionsMD.getAbsolutePath)) {
+      console.log("La ruta es absoluta".debug);
+    }
 
-    const allFilesArr = getAllFiles(filePath);
-    allFilesArr.map((file) => {
-      if (path.extname(file) === ".md") {
-        if (options.validate) {
-          const validatingStatus = validateStatus(file);
-          filesArr.push(validatingStatus);
-        } else if (options.stats) {
-          const readingAllFiles = statsLink(file);
-          filesArr.push(readingAllFiles);
-        } else {
-          const readingExtrAllFiles = extractLinks(file);
-          filesArr.push(readingExtrAllFiles);
-        }
+    const readingFile = (thePath) => {
+      const info = fs.statSync(thePath);
+      let arrFiles = [];
+
+      if (isDirectory(thePath)) {
+        const fileDir = readDir(thePath).map((file) =>
+          path.join(thePath, file)
+        );
+        fileDir.forEach((file) => {
+          if (fs.statSync(file).isFile()) {
+            arrFiles.push(file);
+          } else {
+            const repeat = readingFile(file);
+            let arrFiles = arrFiles.concat(repeat);
+          }
+        });
+      } else if (info.isFile()) {
+        arrFiles.push(thePath.toString());
+      } else {
+        console.log("Undetermined path".error);
       }
-    });
-    return Promise.all(filesArr);
-  }
+
+      const listArray = arrFiles.filter(isMdFile);
+      return listArray;
+    };
+  });
 };
 
 console.log(mdLinks);

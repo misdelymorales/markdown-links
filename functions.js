@@ -36,24 +36,25 @@ const mdFile = (route) => {
     : console.log("La ruta no es un archivo md".error);
 };
 
+//Obtener links
 const linksInfo = (filesMd) => {
   let links = [];
   filesMd.forEach((files) => {
-    const reguExpress =
+    const regExpress =
       /\[(.+)\]\((https?:\/\/[^\s]+)(?: '(.+)')?\)|(https?:\/\/[^\s]+)/gi;
-    const reguText = /\[([^\]]+)]/g;
-    const reguUrl =
+    const regText = /\[([^\]]+)/g;
+    const regUrl =
       /(?:(?:https?|ftp|file):\/\/|www\.|ftp\.)(?:\([-A-Z0-9+&@#\/%=~_|$?!:,.]*\)|[-A-Z0-9+&@#\/%=~_|$?!:,.])*(?:\([-A-Z0-9+&@#\/%=~_|$?!:,.]*\)|[A-Z0-9+&@#\/%=~_|$])/gim;
     const lineText = fs.readFileSync(files, { encoding: "utf8" });
-    const matchLinks = lineText.match(reguExpress);
+    const matchLinks = lineText.match(regExpress);
     if (matchLinks !== null) {
       matchLinks.forEach((info) => {
         links.push({
           text:
-            info.match(reguText) !== null
-              ? info.match(reguText).toString().slice(1, -1)
+            info.match(regText) !== null
+              ? info.match(regText).toString().slice(1, -1)
               : "Texto no encontrado",
-          href: info.match(reguUrl).toString(),
+          href: info.match(regUrl).toString(),
           file: files,
         });
       });
@@ -62,6 +63,23 @@ const linksInfo = (filesMd) => {
     }
   });
   return links;
+};
+
+//validar links
+const validateLinks = (arrLinks) => {
+  const status = arrLinks.map((obj) => {
+    fetch(obj).then((res) => {
+      if (res.status === 200) {
+        return {
+          statustext: ok,
+        };
+      } else {
+        return {
+          statustext: "Fail",
+        };
+      }
+    });
+  });
 };
 
 module.exports = {

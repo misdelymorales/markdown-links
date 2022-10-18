@@ -19,7 +19,7 @@ const mdLinks = (path, options) => {
         resolve(status);
       } else {
         console.log(
-          "Enter an option:".blue +
+          "Enter an option:".debug +
             "\n" +
             "--validate" +
             "\n" +

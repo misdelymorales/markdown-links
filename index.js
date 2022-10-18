@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 const functionsMD = require("./functions.js");
 const fs = require("fs");
+const path = require("path");
+const saveRoute = process.argv[2];
 
 const mdLinks = (path, options) => {
   return new Promise((resolve, reject) => {
@@ -33,4 +35,11 @@ const mdLinks = (path, options) => {
   });
 };
 
+mdLinks(saveRoute)
+  .then((res) => {
+    console.log(res);
+  })
+  .catch((error) => {
+    console.log(error);
+  });
 module.exports = { mdLinks };

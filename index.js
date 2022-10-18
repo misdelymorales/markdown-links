@@ -5,38 +5,32 @@ const fs = require("fs");
 const mdLinks = (path, options) => {
   return new Promise((resolve, reject) => {
     const isAbsolute = functionsMD.getAbsolutePath(path);
-    if (functionsMD.pathExist(functionsMD.getAbsolutePath)) {
+    if (functionsMD.pathExist(isAbsolute)) {
       console.log("La ruta es absoluta".debug);
-    }
 
-    const readingFile = (thePath) => {
-      const info = fs.statSync(thePath);
-      let arrFiles = [];
+      const saveFiles = functionsMD.readingFile(isAbsolute);
+      const saveInfo = functionsMD.linksInfo(saveFiles);
+      const status = functionsMD.linkStats(saveInfo);
+      const valid = functionsMD.validateLinks(saveInfo);
 
-      if (functionsMD.isDirectory(thePath)) {
-        const fileDir = readDir(thePath).map((file) =>
-          path.join(thePath, file)
-        );
-        fileDir.forEach((file) => {
-          if (fs.statSync(file).isFile()) {
-            arrFiles.push(file);
-          } else {
-            const repeat = readingFile(file);
-            let arrFiles = arrFiles.concat(repeat);
-          }
-        });
-      } else if (info.isFile()) {
-        arrFiles.push(thePath.toString());
+      if (options.validate && !options.showStats) {
+        resolve(valid);
+      } else if (!options.validate && options.showStats) {
+        resolve(status);
       } else {
-        console.log("Undetermined path".error);
+        console.log(
+          "Enter an option:".blue +
+            "\n" +
+            "--validate" +
+            "\n" +
+            "--stats" +
+            "\n"
+        );
       }
-
-      const listArray = arrFiles.filter(functionsMD.mdFile);
-      return listArray;
-    };
-
-    resolve(readingFile(path));
+    } else {
+      reject(new Error("Invalid path"));
+    }
   });
 };
 
-mdLinks("./test.md").then(console.log);
+module.exports = { mdLinks };

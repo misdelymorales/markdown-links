@@ -36,6 +36,31 @@ const mdFile = (route) => {
     : console.log("La ruta no es un archivo md".error);
 };
 
+//Leer archivos
+const readingFile = (thePath) => {
+  const info = fs.statSync(thePath);
+  let arrFiles = [];
+
+  if (isDirectory(thePath)) {
+    const fileDir = readDir(thePath).map((file) => path.join(thePath, file));
+    fileDir.forEach((file) => {
+      if (fs.statSync(file).isFile()) {
+        arrFiles.push(file);
+      } else {
+        const repeat = readingFile(file);
+        let arrFiles = arrFiles.concat(repeat);
+      }
+    });
+  } else if (info.isFile()) {
+    arrFiles.push(thePath.toString());
+  } else {
+    console.log("No se encuentra ruta".error);
+  }
+
+  const listArray = arrFiles.filter(mdFile);
+  return listArray;
+};
+
 //Obtener links
 const linksInfo = (filesMd) => {
   let links = [];
@@ -66,20 +91,49 @@ const linksInfo = (filesMd) => {
 };
 
 //validar links
-const validateLinks = (arrLinks) => {
-  const status = arrLinks.map((obj) => {
-    fetch(obj).then((res) => {
-      if (res.status === 200) {
-        return {
-          statustext: ok,
-        };
-      } else {
-        return {
-          statustext: "Fail",
-        };
-      }
-    });
-  });
+const validateLinks = (arrayLinks) => {
+  const status = arrayLinks.map((obj) =>
+    fetch(obj.href)
+      .then((res) => {
+        if (res.status <= 399) {
+          return {
+            text: obj.text,
+            href: obj.href,
+            file: obj.file,
+            status: res.status,
+            statusText: "Ok",
+          };
+        } else {
+          return {
+            text: obj.text,
+            href: obj.href,
+            file: obj.file,
+            status: res.status,
+            statusText: "Fail",
+          };
+        }
+      })
+      .catch((err) => ({
+        text: obj.text,
+        href: obj.href,
+        file: obj.file,
+        status: 404,
+        statusText: "Fail, not found",
+      }))
+  );
+  return Promise.all(status);
+};
+
+const linkStats = (array) => {
+  let status = [];
+  const linkTotal = array.length;
+  const urls = array.map((element) => element.href);
+  const uniqueLinks = new Set(urls).size;
+
+  const linkStats = { total: linkTotal, unique: uniqueLinks };
+
+  status.push(linkStats);
+  return status;
 };
 
 module.exports = {
@@ -89,4 +143,7 @@ module.exports = {
   readDir,
   mdFile,
   linksInfo,
+  validateLinks,
+  linkStats,
+  readingFile,
 };

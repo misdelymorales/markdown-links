@@ -1,6 +1,6 @@
 {
-  "name": "md-links",
-  "description": "Lee y analiza archivos en formato Markdown, para verificar los links que contengan y reportar algunas estadísticas.",
+  "name": "memb-mdlinks",
+  "description": "Librería que analiza archivos en formato Markdown, para verificar los links que contengan y reportar algunas estadísticas.",
   "version": "0.1.0",
   "main": "./index.js",
   "author": "Misdely Morales",

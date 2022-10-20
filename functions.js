@@ -26,114 +26,79 @@ const getAbsolutePath = (route) => {
 const isDirectory = (route) => fs.statSync(route).isDirectory(); //El método fs.statSync() se utiliza para devolver información sobre la ruta del archivo dada de forma síncrona.
 
 //Leer directorio
-const readDir = (routeDir) => fs.readdirSync(routeDir);
+const readDir = (routeDir) => fs.readdirSync(routeDir, "utf-8");
 
 //comprobar si es un archivo md
-const mdFile = (route) => {
-  const ext = path.extname(route);
-  return ext === ".md"
-    ? true
-    : console.log("La ruta no es un archivo md".error);
+const mdFile = (file) => path.extname(file) === ".md";
+
+//Obtener archivos con extensión .md
+const readFile = (file) => fs.readFileSync(file, "utf8");
+
+// expresión regular para hacer la comparación y extracción de links
+const regExp =
+  /(https?:\/\/)(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()!@:%_\+.~#?&\/\/=]*)/gi;
+
+// función que lee directorio y retorna los archivos.md
+const readingFileExtractMD = (routeDir) => {
+  const dataDirectory = readDir(routeDir);
+  let arrFiles = dataDirectory.filter((element) => {
+    if (mdFile(element)) {
+      return element;
+    }
+  });
+  return arrFiles;
 };
 
-//Leer archivos
-const readingFile = (thePath) => {
-  const info = fs.statSync(thePath);
-  let arrFiles = [];
-
-  if (isDirectory(thePath)) {
-    const fileDir = readDir(thePath).map((file) => path.join(thePath, file));
-    fileDir.forEach((file) => {
-      if (fs.statSync(file).isFile()) {
-        arrFiles.push(file);
-      } else {
-        const repeat = readingFile(file);
-        let arrFiles = arrFiles.concat(repeat);
-      }
-    });
-  } else if (info.isFile()) {
-    arrFiles.push(thePath.toString());
-  } else {
-    console.log("No se encuentra ruta".error);
-  }
-
-  const listArray = arrFiles.filter(mdFile);
-  return listArray;
-};
-
-//Obtener links
-const linksInfo = (filesMd) => {
-  let links = [];
-  filesMd.forEach((files) => {
-    const regExpress =
-      /\[(.+)\]\((https?:\/\/[^\s]+)(?: '(.+)')?\)|(https?:\/\/[^\s]+)/gi;
-    const regText = /\[([^\]]+)/g;
-    const regUrl =
-      /(?:(?:https?|ftp|file):\/\/|www\.|ftp\.)(?:\([-A-Z0-9+&@#\/%=~_|$?!:,.]*\)|[-A-Z0-9+&@#\/%=~_|$?!:,.])*(?:\([-A-Z0-9+&@#\/%=~_|$?!:,.]*\)|[A-Z0-9+&@#\/%=~_|$])/gim;
-    const lineText = fs.readFileSync(files, { encoding: "utf8" });
-    const matchLinks = lineText.match(regExpress);
-    if (matchLinks !== null) {
-      matchLinks.forEach((info) => {
-        links.push({
-          text:
-            info.match(regText) !== null
-              ? info.match(regText).toString().slice(1, -1)
-              : "Texto no encontrado",
-          href: info.match(regUrl).toString(),
-          file: files,
+//Extraer links de archivos .md
+const linksExtractor = (filesMd) => {
+  let allLinks = [];
+  filesMd.forEach((file) => {
+    const dataFiles = readFile(file);
+    //extraer links con expresión regular
+    if (regExp.test(dataFiles)) {
+      let arLinks = dataFiles.match(regExp);
+      console.log(
+        `En ${file} existen ${arLinks.length} links para analizar`.help
+      );
+      arLinks.forEach((arrayLinks) => {
+        allLinks.push({
+          file: file,
+          href: arrayLinks,
         });
       });
     } else {
-      console.log("No se puede encontrar ningún enlace".error);
+      console.log(`En ${file} no existen links para analizar`.error);
     }
   });
-  return links;
+  return allLinks;
 };
 
-//validar links
-const validateLinks = (arrayLinks) => {
-  const status = arrayLinks.map((obj) =>
-    fetch(obj.href)
+// //validar links
+const validateLinks = (links) => {
+  const status = links.map((e) => {
+    return fetch(e)
       .then((res) => {
-        if (res.status <= 399) {
-          return {
-            text: obj.text,
-            href: obj.href,
-            file: obj.file,
-            status: res.status,
-            statusText: "Ok",
-          };
-        } else {
-          return {
-            text: obj.text,
-            href: obj.href,
-            file: obj.file,
-            status: res.status,
-            statusText: "Fail",
-          };
-        }
+        return {
+          text: e.text,
+          href: e.href,
+          file: e.file,
+          status: res.status,
+          statusText: "Ok".ok,
+        };
       })
-      .catch((err) => ({
-        text: obj.text,
-        href: obj.href,
-        file: obj.file,
-        status: 404,
-        statusText: "Fail, not found",
-      }))
-  );
+      .catch((error) => {
+        return {
+          text: e.text,
+          href: e.href,
+          file: e.file,
+          status:
+            error.status === undefined ? "No existe status" : error.status,
+          statusText: "Fail".error,
+        };
+      });
+  });
+
   return Promise.all(status);
-};
-
-const linkStats = (array) => {
-  let status = [];
-  const linkTotal = array.length;
-  const urls = array.map((element) => element.href);
-  const uniqueLinks = new Set(urls).size;
-
-  const linkStats = { total: linkTotal, unique: uniqueLinks };
-
-  status.push(linkStats);
-  return status;
 };
 
 module.exports = {
@@ -142,8 +107,7 @@ module.exports = {
   pathExist,
   readDir,
   mdFile,
-  linksInfo,
+  readingFileExtractMD,
+  linksExtractor,
   validateLinks,
-  linkStats,
-  readingFile,
 };

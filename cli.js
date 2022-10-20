@@ -5,4 +5,10 @@ console.log("-------------------------------------------");
 console.log("         Bienvenido a memb-mdlinks         ");
 console.log("-------------------------------------------");
 
-const saveRoute = process.argv[2];
+const userarg = process.argv;
+const options = {
+  validate: true,
+  stats: false,
+};
+
+//process.argv[3];  (options.validate && !options.showStats)  y en consola seleccionar una de las 2 opciones

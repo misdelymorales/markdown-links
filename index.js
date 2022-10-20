@@ -1,36 +1,55 @@
 #!/usr/bin/env node
-const functionsMD = require("./functions.js");
+const {
+  isDirectory,
+  getAbsolutePath,
+  pathExist,
+  mdFile,
+  readingFileExtractMD,
+  linksExtractor,
+  validateLinks,
+} = require("./functions.js");
 const fs = require("fs");
-const path = require("path");
-const saveRoute = process.argv[2];
+const fetch = require("node-fetch");
+const saveRoute = process.argv[3];
 
-const mdLinks = (path, options) => {
+const mdLinks = (route, options) => {
   return new Promise((resolve, reject) => {
-    const isAbsolute = functionsMD.getAbsolutePath(path);
-    if (functionsMD.pathExist(isAbsolute)) {
-      console.log("La ruta es absoluta".debug);
+    //si la ruta no existe
+    if (!pathExist(route)) {
+      reject("La ruta no es válida".error);
+    }
 
-      const saveFiles = functionsMD.readingFile(isAbsolute);
-      const saveInfo = functionsMD.linksInfo(saveFiles);
-      const status = functionsMD.linkStats(saveInfo);
-      const valid = functionsMD.validateLinks(saveInfo);
+    //guardamos rutas absolutas
+    const isAbsolute = getAbsolutePath(route);
+    const filesAbsolute = [];
 
-      if (options.validate && !options.showStats) {
-        resolve(valid);
-      } else if (!options.validate && options.showStats) {
-        resolve(status);
+    if (pathExist(isAbsolute)) {
+      if (isDirectory(route)) {
+        console.log("Tu ruta es un directorio".warn);
+        //Extraemos archivos de directorio
+        extractFilesMD = readingFileExtractMD(route);
       } else {
-        console.log(
-          "Enter an option:".debug +
-            "\n" +
-            "--validate" +
-            "\n" +
-            "--stats" +
-            "\n"
-        );
+        //La ruta es archivo .md
+        if (mdFile(route)) {
+          console.log("Tu ruta es un archivo .md".warn);
+          filesAbsolute = [route];
+        }
       }
-    } else {
-      reject(new Error("Invalid path"));
+      //Si la ruta no es archivo .md
+    } else rej(`La ruta ${route} es inválida`.error);
+
+    //Extraer Links
+    const links = linksExtractor(filesAbsolute);
+
+    //Se extrae data de los links
+    const dataLinksValidate = validateLinks(links);
+
+    if (options === undefined) {
+      res(links);
+    } else if (options === "--validate") {
+      res(dataLinksValidate);
+    } else if (options === "--stats") {
+      res(`Existen ${links.length} links en total`.help);
     }
   });
 };
@@ -42,4 +61,5 @@ mdLinks(saveRoute)
   .catch((error) => {
     console.log(error);
   });
+
 module.exports = { mdLinks };

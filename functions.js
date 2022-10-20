@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 //importar modulos
 const fs = require("fs");
-const path = require("path");
+const path = require("node:path");
 const fetch = require("node-fetch");
 const colors = require("colors");
 colors.setTheme({
@@ -36,7 +36,7 @@ const readFile = (file) => fs.readFileSync(file, "utf8");
 
 // expresión regular para hacer la comparación y extracción de links
 const regExp =
-  /(https?:\/\/)(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()!@:%_\+.~#?&\/\/=]*)/gi;
+  /(?:(?:https?|ftp|file):\/\/|www\.|ftp\.)(?:\([-A-Z0-9+&@#\/%=~_|$?!:,.]*\)|[-A-Z0-9+&@#\/%=~_|$?!:,.])*(?:\([-A-Z0-9+&@#\/%=~_|$?!:,.]*\)|[A-Z0-9+&@#\/%=~_|$])/gim;
 
 // función que lee directorio y retorna los archivos.md
 const readingFileExtractMD = (routeDir) => {
@@ -56,7 +56,7 @@ const linksExtractor = (filesMd) => {
     const dataFiles = readFile(file);
     //extraer links con expresión regular
     if (regExp.test(dataFiles)) {
-      let arLinks = dataFiles.match(regExp);
+      const arLinks = dataFiles.match(regExp);
       console.log(
         `En ${file} existen ${arLinks.length} links para analizar`.help
       );
@@ -83,7 +83,7 @@ const validateLinks = (links) => {
           href: e.href,
           file: e.file,
           status: res.status,
-          statusText: "Ok".ok,
+          statusText: "Ok",
         };
       })
       .catch((error) => {
@@ -93,12 +93,12 @@ const validateLinks = (links) => {
           file: e.file,
           status:
             error.status === undefined ? "No existe status" : error.status,
-          statusText: "Fail".error,
+          statusText: "Fail",
         };
       });
   });
 
-  return Promise.all(status);
+  return status;
 };
 
 module.exports = {

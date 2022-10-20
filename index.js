@@ -8,55 +8,69 @@ const {
   linksExtractor,
   validateLinks,
 } = require("./functions.js");
+const path = require("node:path");
 const fs = require("fs");
 const fetch = require("node-fetch");
-const saveRoute = process.argv[3];
+const saveRoute = process.argv[2];
 
 const mdLinks = (route, options) => {
   return new Promise((resolve, reject) => {
     //si la ruta no existe
-    if (!pathExist(route)) {
+    const baseRoute = path.basename(route);
+    if (!pathExist(baseRoute)) {
       reject("La ruta no es válida".error);
     }
 
     //guardamos rutas absolutas
     const isAbsolute = getAbsolutePath(route);
-    const filesAbsolute = [];
 
-    if (pathExist(isAbsolute)) {
-      if (isDirectory(route)) {
-        console.log("Tu ruta es un directorio".warn);
-        //Extraemos archivos de directorio
-        extractFilesMD = readingFileExtractMD(route);
+    let filesAbsolute = [];
+    //si la ruta existe
+    if (pathExist(isAbsolute) && isDirectory(route)) {
+      console.log("Tu ruta es un directorio".warn);
+      //Extraemos archivos de directorio
+      extractFilesMD = readingFileExtractMD(route);
+    } else {
+      //La ruta es archivo .md
+      if (mdFile(route)) {
+        console.log("Tu ruta es un archivo .md".warn);
+        filesAbsolute = [route];
+        linksExtractor(filesAbsolute);
       } else {
-        //La ruta es archivo .md
-        if (mdFile(route)) {
-          console.log("Tu ruta es un archivo .md".warn);
-          filesAbsolute = [route];
-        }
+        //Si la ruta no es archivo .md
+        reject(`La ruta ${route} es inválida`.error);
       }
-      //Si la ruta no es archivo .md
-    } else rej(`La ruta ${route} es inválida`.error);
+    }
 
     //Extraer Links
     const links = linksExtractor(filesAbsolute);
 
     //Se extrae data de los links
     const dataLinksValidate = validateLinks(links);
+    Promise.allSettled(dataLinksValidate)
+
+      .then((result) => {
+        console.log(result);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
 
     if (options === undefined) {
-      res(links);
+      resolve(links);
     } else if (options === "--validate") {
-      res(dataLinksValidate);
+      resolve(dataLinksValidate);
     } else if (options === "--stats") {
-      res(`Existen ${links.length} links en total`.help);
+      resolve(`Existen ${links.length} links en total`.help);
     }
   });
 };
 
+//https://filisantillan.com/bits/promise-allsettled/
+
 mdLinks(saveRoute)
-  .then((res) => {
-    console.log(res);
+  .then((resolve) => {
+    console.log(resolve);
   })
   .catch((error) => {
     console.log(error);

@@ -1,14 +1,19 @@
 #!/usr/bin/env node
 const { mdLinks } = require("./index.js");
+const colors = require("colors");
+colors.setTheme({
+  silly: "rainbow",
+  prompt: "grey",
+  ok: ["green", "bold", "underline"],
+  help: "cyan",
+  warn: ["yellow", "bold"],
+  debug: "blue",
+  error: ["red", "underline"],
+});
 
+const [, , , ...args] = process.argv;
 console.log("-------------------------------------------");
 console.log("         Bienvenido a memb-mdlinks         ");
 console.log("-------------------------------------------");
 
-const userarg = process.argv;
-const options = {
-  validate: true,
-  stats: false,
-};
-
-//process.argv[3];  (options.validate && !options.showStats)  y en consola seleccionar una de las 2 opciones
+// Validación de parámetros por terminal

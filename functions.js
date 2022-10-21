@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 //importar modulos
 const fs = require("fs");
-const path = require("node:path");
+const path = require("path");
 const fetch = require("node-fetch");
 const colors = require("colors");
 colors.setTheme({

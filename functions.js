@@ -83,7 +83,7 @@ const validateLinks = (links) => {
           href: e.href,
           file: e.file,
           status: res.status,
-          statusText: "Ok",
+          statusText: res.status < 400 ? "ok" : "fail",
         };
       })
       .catch((error) => {
@@ -101,6 +101,12 @@ const validateLinks = (links) => {
   return status;
 };
 
+const brokenLinks = (linksValidate) => {
+  return linksValidate.filter((link) => {
+    return link.statusText === "fail";
+  }).length;
+};
+
 module.exports = {
   isDirectory,
   getAbsolutePath,
@@ -110,4 +116,5 @@ module.exports = {
   readingFileExtractMD,
   linksExtractor,
   validateLinks,
+  brokenLinks,
 };

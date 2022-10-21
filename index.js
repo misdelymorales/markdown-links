@@ -9,8 +9,6 @@ const {
   validateLinks,
 } = require("./functions.js");
 const path = require("node:path");
-const fs = require("fs");
-const fetch = require("node-fetch");
 const saveRoute = process.argv[2];
 
 const mdLinks = (route, options) => {
@@ -65,8 +63,6 @@ const mdLinks = (route, options) => {
     }
   });
 };
-
-//https://filisantillan.com/bits/promise-allsettled/
 
 mdLinks(saveRoute)
   .then((resolve) => {

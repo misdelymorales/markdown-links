@@ -12,19 +12,19 @@ const {
 
 const routeError = "./readme.m";
 const path = "./readme.md";
-const pathBreak = "pruebas/carp_prueba/break.md";
-const routeRelative = "./pruebas";
+const pathRelative = "./";
 const folder = "./pruebas/carp_prueba";
 const pathDiferent = "./package.json";
-const pathPrueba = "./pruebas./test.md";
+const pathPrueba = "./test.md";
 const path1 = "./pruebas/carp_prueba/vacio.md";
-const routeRelative2 = "./test";
+const routeRelative2 = "./pruebas/carp_prueba/prueba2.md";
+const folderWithImage = "./pruebas/carp_prueba2";
 const links = [
   {
-    file: "./pruebas./test.md",
+    file: "./test.md",
     href: "https://es.wikipedia.org/wiki/Markdown)",
   },
-  { file: "./pruebas./test.md", href: "https://nodejs.org/)" },
+  { file: "./test.md", href: "https://nodejs.org/)" },
 ];
 
 const arrLinks = [
@@ -106,11 +106,11 @@ describe("La función readingFileExtractMD extrae los arcivos .md de un director
     expect(typeof readingFileExtractMD).toBe("function");
   });
   it("Debería retornar un arreglo", () => {
-    let arrayFiles = readingFileExtractMD(routeRelative);
-    expect(arrayFiles[1]).toEqual("test.md");
+    let arrayFiles = readingFileExtractMD(pathRelative);
+    expect(arrayFiles[0]).toContain("miReadme.md");
   });
   it("Debería retornar un array vacio si el directorio no tiene archivos.md", () => {
-    expect(extractionFilesMD(routeRelative2)).toEqual([]);
+    expect(readingFileExtractMD(folderWithImage)).toEqual([]);
   });
 });
 
@@ -123,7 +123,16 @@ describe("extrae Links", () => {
     expect(linksExtractor([path1])).toEqual([]);
   });
   it("Si existen links deberia retornar un array con href y file.", () => {
-    expect(linksExtractor([pathPrueba])).toEqual(arrLinks);
+    expect(linksExtractor(pathPrueba)).toEqual([
+      {
+        file: "./test.md",
+        href: "https://es.wikipedia.org/wiki/Markdown)",
+      },
+      {
+        file: "./test.md",
+        href: "https://nodejs.org/)",
+      },
+    ]);
   });
 });
 
@@ -132,38 +141,107 @@ describe("La función validateLinks valida los links en ok/fail y su status.", (
   it("Debería retornar una función.", () => {
     expect(typeof validateLinks).toBe("function");
   });
-  test("Deberia retornar un array con la validación de los links.", async () => {
-    const data = await linksExtractor(links);
-    expect(data).toStrictEqual(arrLinks);
+  // test("Deberia retornar un array con la validación de los links.", async () => {
+  //   const data = await validateLinks(arrLinks);
+  //   expect(data).toContain(arrLinks);
+  // });
+  it("hacer la consulta http con fecth y retorna un promesas", (done) => {
+    const path = "./pruebas/carp_prueba/break.md";
+    const extract = func.linksExtractor(func.readFile(path), path);
+    const arrPromesas = func.validateLinks(extract);
+    const arr = [
+      {
+        href: "https://jestjs.io/docs/es-ES/getting-started",
+        text: "Empezando con Jest - Documentación oficial",
+        file: "./pruebas/carp_prueba/break.md",
+        status: 200,
+        statusText: "ok",
+      },
+      {
+        href: "https://jestjs.io/docs/es-ES/asynchronous",
+        text: "Tests de código asincrónico con Jest - Documentación oficial",
+        file: "./pruebas/carp_prueba/break.md",
+        status: 200,
+        statusText: "ok",
+      },
+    ];
+    arrPromesas.then((result) => {
+      expect(result).toStrictEqual(arr);
+      done();
+    });
+  });
+  it("hacer la peticion con fecth y retorna fallido", () => {
+    const arrayParam = [
+      {
+        href: "https://jestjs.io/docs/es-ES/getting-started",
+        text: "Empezando con Jest - Documentación oficial",
+        file: "D:LABORATORIAmarkdown-linksREADME.md",
+      },
+      {
+        href: "https://jestjs.io/docs/es-ES/asynchronous",
+        text: "Tests de código asincrónico con Jest - Documentación oficial",
+        file: "D:LABORATORIAmarkdown-linksREADME.md",
+      },
+      {
+        href: "https://jestjs.io/docs/es-ES/asynchronous",
+        text: "Tests de código asincrónico con Jest - Documentación oficial",
+        file: "D:LABORATORIAmarkdown-linksREADME.md",
+      },
+    ];
+    const arrResult = [
+      {
+        href: "https://jestjs.io/docs/es-ES/getting-started",
+        text: "Empezando con Jest - Documentación oficial",
+        file: "D:LABORATORIAmarkdown-linksREADME.md",
+        status: 400,
+        statusText: "fail",
+      },
+      {
+        href: "https://jestjs.io/docs/es-ES/asynchronous",
+        text: "Tests de código asincrónico con Jest - Documentación oficial",
+        file: "D:LABORATORIAmarkdown-linksREADME.md",
+        status: 200,
+        statusText: "ok",
+      },
+      {
+        href: "https://jestjs.io/docs/es-ES/asynchronous",
+        text: "Tests de código asincrónico con Jest - Documentación oficial",
+        file: "D:LABORATORIAmarkdown-linksREADME.md",
+        status: 200,
+        statusText: "ok",
+      },
+    ];
+    fetch.mockResolvedValueOnce({ status: 400, statusText: "fail" });
+    func.validateLinks(arrayParam).then((result) => {
+      expect(result).toEqual(arrResult);
+    });
   });
 });
 
 //Función mdLinks
 describe("mdLinks", () => {
-  it("Debería retornar una función.", () => {
-    expect(typeof mdLinks).toBe("function");
+  it("Debería retornar un objeto.", () => {
+    expect(typeof mdLinks).toBe("object");
   });
-  test('Debería retornar "La ruta ingresada no es válida." si la ruta es inválida', async () => {
-    await expect(mdLinks(routeError, undefined)).rejects.toMatch(
-      "La ruta ingresada no es válida."
-    );
+  test('Debería retornar "La ruta no es válida." si la ruta es inválida', async () => {
+    await expect(mdLinks(routeError)).rejects.toMatch("La ruta no es válida.");
   });
   test('Debería retornar "La ruta  no corresponde a un archivo Markdown" si la ruta no es archivo.md.', async () => {
-    await expect(mdLinks(pathDiferent, undefined)).rejects.toMatch(
-      "La ruta ./package.json no corresponde a un archivo Markdown."
+    await expect(mdLinks(pathDiferent)).rejects.toMatch(
+      `La ruta ${route} es inválida`
     );
   });
   test("Debería retornar el total de los links encontrados", async () => {
-    const data = await mdLinks(routeRelative, "--stats");
-    expect(data).toStrictEqual("Existen 4 links en total.");
+    const data = await mdLinks(folder, "--stats");
+    expect(data).toEqual(`Existen ${links.length} links en total`);
   });
   test("Debería retornar los links con las propiedades href y file.", async () => {
-    const data = await mdLinks(pathPrueba, undefined);
-    expect(data).toStrictEqual(links);
+    const data = await mdLinks(pathPrueba);
+    expect(data).toEqual(links);
   });
   test("Debería retornar los links con todas sus propiedades.", async () => {
     const data = await mdLinks(pathPrueba, "--validate");
-    expect(data).toStrictEqual(arrLinks);
+    expect(data).toSEqual(arrLinks);
   });
   test("Debería retornar el total de los links encontrados.", async () => {
     const data = await mdLinks(pathPrueba, "--stats");

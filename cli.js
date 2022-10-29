@@ -12,17 +12,42 @@ colors.setTheme({
   error: ["red", "underline"],
 });
 
-//const [, , , ...args] = process.argv;
-// argv[0] = ruta de node
-// argv[1] = ruta de mdLinks
-// argv[2] = ruta del archivo
-// argv[3] = --validate
-// argv[4] = --stats
-
-const argv = process.argv;
+const [ , ,termPath, termValidate] = process.argv;
 
 console.log("-------------------------------------------");
 console.log("         Bienvenido a memb-mdlinks         ");
 console.log("-------------------------------------------");
 
+// Validación de parámetros por terminal
+if (termPath && termValidate == undefined) {
+    mdLinks(termPath)
+    .then(resolve => {
+        console.log(resolve);
+    })
+    .catch(reject => {
+        console.log(color.bold.red(reject));
+    })
+}
+else if (termPath && termValidate == '--validate') {
+    mdLinks(termPath, termValidate)
+        .then(resolve => {
+            console.log(resolve);
+        })
+        .catch(reject => {
+            console.log(color.bold.underline.red(reject));
+        })
+}
+else if (termPath && termValidate == '--stats') {
+    mdLinks(termPath, termValidate)
+        .then(resolve => {
+            console.log(gradient.cristal(resolve));
+        })
+        .catch(reject => {
+            console.log(color.bold.underline.red(reject));
+        })
+}
 
+else {
+    console.log(color.bold.red('Error en los parámetros utilizados.'));
+
+}

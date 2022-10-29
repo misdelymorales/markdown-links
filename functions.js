@@ -52,7 +52,7 @@ const readingFileExtractMD = (routeDir) => {
 //Extraer links de archivos .md
 const linksExtractor = (filesMd) => {
   let allLinks = [];
-  filesMd.forEach((file) => {
+  filesMd.map((file) => {
     const dataFiles = readFile(file);
     //extraer links con expresión regular
     if (regExp.test(dataFiles)) {
@@ -79,7 +79,6 @@ const validateLinks = (links) => {
     return fetch(e)
       .then((res) => {
         return {
-          text: e.text,
           href: e.href,
           file: e.file,
           status: res.status,
@@ -88,7 +87,6 @@ const validateLinks = (links) => {
       })
       .catch((error) => {
         return {
-          text: e.text,
           href: e.href,
           file: e.file,
           status:
@@ -97,7 +95,7 @@ const validateLinks = (links) => {
         };
       });
   });
-
+  console.log(status);
   return status;
 };
 

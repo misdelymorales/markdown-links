@@ -15,7 +15,6 @@ const mdLinks = (route, options) => {
   return new Promise((resolve, reject) => {
     //si la ruta no existe
     const baseRoute = path.resolve(route);
-    console.log(baseRoute);
     console.log("pathExist", pathExist(baseRoute));
     if (!pathExist(baseRoute)) {
       reject("La ruta no es válida".error);

@@ -123,7 +123,8 @@ describe("extrae Links", () => {
     expect(linksExtractor([path1])).toEqual([]);
   });
   it("Si existen links deberia retornar un array con href y file.", () => {
-    expect(linksExtractor(pathPrueba)).toEqual([
+    let arrayFiles = readingFileExtractMD(pathRelative);
+    expect(linksExtractor(arrayFiles)).toContain([
       {
         file: "./test.md",
         href: "https://es.wikipedia.org/wiki/Markdown)",
@@ -141,80 +142,11 @@ describe("La función validateLinks valida los links en ok/fail y su status.", (
   it("Debería retornar una función.", () => {
     expect(typeof validateLinks).toBe("function");
   });
-  // test("Deberia retornar un array con la validación de los links.", async () => {
-  //   const data = await validateLinks(arrLinks);
-  //   expect(data).toContain(arrLinks);
-  // });
-  it("hacer la consulta http con fecth y retorna un promesas", (done) => {
-    const path = "./pruebas/carp_prueba/break.md";
-    const extract = func.linksExtractor(func.readFile(path), path);
-    const arrPromesas = func.validateLinks(extract);
-    const arr = [
-      {
-        href: "https://jestjs.io/docs/es-ES/getting-started",
-        text: "Empezando con Jest - Documentación oficial",
-        file: "./pruebas/carp_prueba/break.md",
-        status: 200,
-        statusText: "ok",
-      },
-      {
-        href: "https://jestjs.io/docs/es-ES/asynchronous",
-        text: "Tests de código asincrónico con Jest - Documentación oficial",
-        file: "./pruebas/carp_prueba/break.md",
-        status: 200,
-        statusText: "ok",
-      },
-    ];
-    arrPromesas.then((result) => {
-      expect(result).toStrictEqual(arr);
-      done();
-    });
+  test("Deberia retornar un array con la validación de los links.", async () => {
+    await expect(validateLinks()).resolve.toContain(arrLinks);
   });
-  it("hacer la peticion con fecth y retorna fallido", () => {
-    const arrayParam = [
-      {
-        href: "https://jestjs.io/docs/es-ES/getting-started",
-        text: "Empezando con Jest - Documentación oficial",
-        file: "D:LABORATORIAmarkdown-linksREADME.md",
-      },
-      {
-        href: "https://jestjs.io/docs/es-ES/asynchronous",
-        text: "Tests de código asincrónico con Jest - Documentación oficial",
-        file: "D:LABORATORIAmarkdown-linksREADME.md",
-      },
-      {
-        href: "https://jestjs.io/docs/es-ES/asynchronous",
-        text: "Tests de código asincrónico con Jest - Documentación oficial",
-        file: "D:LABORATORIAmarkdown-linksREADME.md",
-      },
-    ];
-    const arrResult = [
-      {
-        href: "https://jestjs.io/docs/es-ES/getting-started",
-        text: "Empezando con Jest - Documentación oficial",
-        file: "D:LABORATORIAmarkdown-linksREADME.md",
-        status: 400,
-        statusText: "fail",
-      },
-      {
-        href: "https://jestjs.io/docs/es-ES/asynchronous",
-        text: "Tests de código asincrónico con Jest - Documentación oficial",
-        file: "D:LABORATORIAmarkdown-linksREADME.md",
-        status: 200,
-        statusText: "ok",
-      },
-      {
-        href: "https://jestjs.io/docs/es-ES/asynchronous",
-        text: "Tests de código asincrónico con Jest - Documentación oficial",
-        file: "D:LABORATORIAmarkdown-linksREADME.md",
-        status: 200,
-        statusText: "ok",
-      },
-    ];
-    fetch.mockResolvedValueOnce({ status: 400, statusText: "fail" });
-    func.validateLinks(arrayParam).then((result) => {
-      expect(result).toEqual(arrResult);
-    });
+  test("el fecth falla con un error", async () => {
+    await expect(validateLinks()).rejects.toMatch("error");
   });
 });
 
@@ -247,4 +179,10 @@ describe("mdLinks", () => {
     const data = await mdLinks(pathPrueba, "--stats");
     expect(data).toStrictEqual("Existen 3 links en total.");
   });
+  const validateLinkFail = {
+    host: "community.laboratoria.la",
+    linkname:
+      "http://community.laboratoria.la/t/modulos-librerias-paquetes-frameworks-cual-es-la-diferencia/175)",
+    status: false,
+  };
 });
